@@ -1,0 +1,9 @@
+{
+    "project" : {
+            "domain":"www.1tianxiadn.com",
+            "charset":"utf8",
+            "md5_length" : 10,
+            "md5_cat_str" : "_"
+        },
+
+}
