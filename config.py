@@ -17,7 +17,7 @@ class Config(object):
     # default configuration
     default = {
         'project': {
-            'charset': 'utf8'
+            'charset': 'utf8',
             'md5_length': 10,
             'md5_cat_str': '_'
         }
