@@ -27,9 +27,9 @@ class Parser(object):
             'coffee', 'less', 'sass', 'jsp'
             ]
 
-    #HTML_REGEX = '<link.*href="(.*?)"|<script.*src="(.*?)"|<img.*src="(.*?)"'
     HTML_REGEX = '(<link.*href|<script.*src|<img.*src)="(.*?)"'
-    CSS_REGEX = ''
+    CSS_REGEX = '(@import.*url|backgroud.*url|background-image.*url).*\(["\']*(.*?)["\']*\)'
+    RESOURCE_MAP = {}
 
     def __init__(self):
         pass
@@ -38,24 +38,44 @@ class Parser(object):
         """
         Parse css files
         """
-        content = open(path).read().decode(self.CHARSET)
+        base_path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp%s%s'
+        abs_path = base_path % ('/' if path.startswith('.') else '', path)
+        content = open(abs_path).read().decode(self.CHARSET)
+        pattern = re.compile(self.CSS_REGEX, re.IGNORECASE)
+        res_list = pattern.findall(content)
+        for item in res_list:
+            logger.debug("css parser %s" % item[1])
+            #TODO
+            #[] Parse all files found in res_list
+
+        #TODO
+        #[] Replace all files with new name in RESOURCE_MAP
+        for item in res_list:
+            pass
+            #content.replace(item[1], self.RESOURCE_MAP[item[1]])
 
     def __js_parse(self, path):
         """
         Parse js files
         """
         content = open(path).read().decode(self.CHARSET)
-    def __binary_parse(self, path):
+
+    def __binary_parse(self, url):
         base_path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp%s%s'
-        abs_path = base_path % ('/' if path.startswith('.') else '', path)
-        logger.info(abs_path)
+        abs_path = base_path % ('/' if url.startswith('.') else '', url)
         new_abs_path = utils.unique_name(abs_path, 10, '_')
-        logger.debug(new_abs_path)
 
-        #TODO [x] Rename
-        os.rename(abs_path, new_abs_path)
+        (parent_path, new_file_name) = os.path.split(new_abs_path)
+        (parent_url, old_file_name) = os.path.split(url)
+        logger.success("%s %s %s %s" % (parent_path, new_file_name, parent_url, old_file_name))
 
+        new_url = "%s/%s" % (parent_url, new_file_name)
+        logger.success(new_url)
+        self.RESOURCE_MAP[url] = new_url;
 
+        #TODO
+        #[x] Rename
+        #os.rename(abs_path, new_abs_path)
 
     def parse(self, path):
         """
@@ -74,6 +94,7 @@ class Parser(object):
             logger.debug(item[1])
             if item[1].endswith('.css'):
                 logger.warning("CSS FOUND")
+                self.__css_parse(item[1])
             elif item[1].endswith('.js'):
                 logger.warning('JS FOUND')
             elif item[1].endswith('.png'):

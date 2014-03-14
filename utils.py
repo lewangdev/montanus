@@ -12,7 +12,6 @@ def unique_name(path, length, cat):
     method.update(fh.read())
     fh.close()
     hex_str = method.hexdigest()
-    #(base_path, file_name) = os.path.split(path)
     (file_name, ext_name) = os.path.splitext(path)
     return "".join([file_name, cat, hex_str[0:length], ext_name])
 
