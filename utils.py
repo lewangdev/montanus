@@ -4,16 +4,17 @@ import os
 import errno
 import hashlib
 
-def unique_name(filename, length, cat):
+def unique_name(path, length, cat):
     """
     """
     method = hashlib.md5()
-    fh = open(filename, 'rb')
+    fh = open(path, 'rb')
     method.update(fh.read())
     fh.close()
     hex_str = method.hexdigest()
-    (file_path, ext_name) = os.path.split(filename)
-    return "".join([file_path, cat, hex_str[0:length, ext_name]])
+    #(base_path, file_name) = os.path.split(path)
+    (file_name, ext_name) = os.path.splitext(path)
+    return "".join([file_name, cat, hex_str[0:length], ext_name])
 
 def mkdir_p(path):
     """mkdir -p
