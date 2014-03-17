@@ -35,8 +35,9 @@ class Parser(object):
         res_list = pattern.findall(content)
         for item in res_list:
             logger.debug("In css parser %s" % item[1])
-            #TODO
+            #TODO Refactor
             #[ ] Parse all files found in res_list
+            #[ ] Need refactor and merge code
             if item[1].endswith('.png'):
                 (parent_path, file_name) = os.path.split(path)
                 relative_parent_path_len = len(parent_path) - len(self.BASE_PATH)
@@ -48,6 +49,8 @@ class Parser(object):
                     abs_path = self.BASE_PATH + item[1]
                 logger.debug(abs_path)
                 new_file_name = self.__binary_parse(abs_path)
+                # TODO MAPPING
+                #[ ] Gether new file name to a map for replace old name
             elif item[1].endswith('css'):
                 (parent_path, file_name) = os.path.split(path)
                 relative_parent_path_len = len(parent_path) - len(self.BASE_PATH)
@@ -61,8 +64,8 @@ class Parser(object):
                 self.__css_parse(abs_path)
 
 
-        #TODO
-        #[] Replace all files with new name in RESOURCE_MAP
+        #TODO Replace
+        #[ ] Replace all files with new name in RESOURCE_MAP
         for item in res_list:
             pass
 
