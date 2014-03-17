@@ -13,11 +13,8 @@ class Parser(object):
     """
     CHARSET = 'utf8'
     IMAGE_FILE_EXTS = [
-            'svg', 'tif', 'tiff', 'wbmp',
-            'png', 'bmp', 'fax', 'gif',
-            'ico', 'jfif', 'jpe', 'jpeg',
-            'jpg', 'woff', 'cur', 'webp',
-            'swf', 'ttf', 'eot'
+            'png', 'bmp', 'gif',  'ico',
+            'jfif', 'jpe', 'jpeg', 'jpg'
             ]
 
     TEXT_FILE_EXTS = [
@@ -30,6 +27,7 @@ class Parser(object):
     HTML_REGEX = '(<link.*href|<script.*src|<img.*src)="(.*?)"'
     CSS_REGEX = '(@import.*url|backgroud.*url|background-image.*url).*\(["\']*(.*?)["\']*\)'
     RESOURCE_MAP = {}
+    BASE_PATH = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
 
     def __init__(self):
         pass
@@ -46,13 +44,17 @@ class Parser(object):
         for item in res_list:
             logger.debug("css parser %s" % item[1])
             #TODO
-            #[] Parse all files found in res_list
+            #[ ] Parse all files found in res_list
+            if item[1].endswith('.png'):
+                (parent_path, file_name) = os.path.split(abs_path)
+                self.__binary_parse(item[1])
 
         #TODO
         #[] Replace all files with new name in RESOURCE_MAP
         for item in res_list:
-            pass
-            #content.replace(item[1], self.RESOURCE_MAP[item[1]])
+            content.replace(item[1], self.RESOURCE_MAP[item[1]])
+
+        print content
 
     def __js_parse(self, path):
         """
@@ -86,6 +88,8 @@ class Parser(object):
         pattern = re.compile(self.HTML_REGEX, re.IGNORECASE)
         res_list = pattern.findall(content)
 
+        (parent_path, file_name) = os.path.split(path)
+
         #TODO
         #[ ] Dive into css,js... files
         #[x] Get md5 of image files
@@ -94,12 +98,14 @@ class Parser(object):
             logger.debug(item[1])
             if item[1].endswith('.css'):
                 logger.warning("CSS FOUND")
-                self.__css_parse(item[1])
+                abs_path = parent_path % ('/' if item[1].startswith('.') else '', item[1])
+                self.__css_parse(abs_path)
             elif item[1].endswith('.js'):
                 logger.warning('JS FOUND')
             elif item[1].endswith('.png'):
                 logger.warning('PNG Found')
-                self.__binary_parse(item[1])
+                abs_path = parent_path % ('/' if item[1].startswith('.') else '', item[1])
+                self.__binary_parse(abs_path)
 
 
 parser = Parser()  # build a runtime parser
