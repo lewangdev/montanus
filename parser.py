@@ -12,17 +12,11 @@ class Parser(object):
     """
     """
     CHARSET = 'utf8'
-    IMAGE_FILE_EXTS = [
+    BINARY_FILE_EXTS = [
             'png', 'bmp', 'gif',  'ico',
             'jfif', 'jpe', 'jpeg', 'jpg'
             ]
 
-    TEXT_FILE_EXTS = [
-            'css', 'tpl', 'js', 'php',
-            'txt', 'json', 'xml', 'htm',
-            'text', 'xhtml', 'html', 'md',
-            'coffee', 'less', 'sass', 'jsp'
-            ]
 
     HTML_REGEX = '(<link.*href|<script.*src|<img.*src)="(.*?)"'
     CSS_REGEX = '(@import.*url|backgroud.*url|background-image.*url).*\(["\']*(.*?)["\']*\)'
@@ -36,25 +30,41 @@ class Parser(object):
         """
         Parse css files
         """
-        base_path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp%s%s'
-        abs_path = base_path % ('/' if path.startswith('.') else '', path)
-        content = open(abs_path).read().decode(self.CHARSET)
+        content = open(path).read().decode(self.CHARSET)
         pattern = re.compile(self.CSS_REGEX, re.IGNORECASE)
         res_list = pattern.findall(content)
         for item in res_list:
-            logger.debug("css parser %s" % item[1])
+            logger.debug("In css parser %s" % item[1])
             #TODO
             #[ ] Parse all files found in res_list
             if item[1].endswith('.png'):
-                (parent_path, file_name) = os.path.split(abs_path)
-                self.__binary_parse(item[1])
+                (parent_path, file_name) = os.path.split(path)
+                relative_parent_path_len = len(parent_path) - len(self.BASE_PATH)
+                relative_parent_path = parent_path[0-relative_parent_path_len:]
+                logger.debug("%s %s %s" % (parent_path, file_name, relative_parent_path))
+                if item[1].startswith('.') or item[1].startswith('..'):
+                    abs_path = (parent_path + '%s%s') % ('/', item[1])
+                elif item[1].startswith("/"):
+                    abs_path = self.BASE_PATH + item[1]
+                logger.debug(abs_path)
+                new_file_name = self.__binary_parse(abs_path)
+            elif item[1].endswith('css'):
+                (parent_path, file_name) = os.path.split(path)
+                relative_parent_path_len = len(parent_path) - len(self.BASE_PATH)
+                relative_parent_path = parent_path[0-relative_parent_path_len:]
+                logger.debug("%s %s %s" % (parent_path, file_name, relative_parent_path))
+                if item[1].startswith('.') or item[1].startswith('..'):
+                    abs_path = (parent_path + '%s%s') % ('/', item[1])
+                elif item[1].startswith("/"):
+                    abs_path = self.BASE_PATH + item[1]
+                logger.debug(abs_path)
+                self.__css_parse(abs_path)
+
 
         #TODO
         #[] Replace all files with new name in RESOURCE_MAP
         for item in res_list:
-            content.replace(item[1], self.RESOURCE_MAP[item[1]])
-
-        print content
+            pass
 
     def __js_parse(self, path):
         """
@@ -62,26 +72,20 @@ class Parser(object):
         """
         content = open(path).read().decode(self.CHARSET)
 
-    def __binary_parse(self, url):
-        base_path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp%s%s'
-        abs_path = base_path % ('/' if url.startswith('.') else '', url)
-        new_abs_path = utils.unique_name(abs_path, 10, '_')
+    def __binary_parse(self, path):
+        new_abs_path = utils.unique_name(path, 10, '_')
 
         (parent_path, new_file_name) = os.path.split(new_abs_path)
-        (parent_url, old_file_name) = os.path.split(url)
-        logger.success("%s %s %s %s" % (parent_path, new_file_name, parent_url, old_file_name))
-
-        new_url = "%s/%s" % (parent_url, new_file_name)
-        logger.success(new_url)
-        self.RESOURCE_MAP[url] = new_url;
+        logger.success(new_file_name)
 
         #TODO
         #[x] Rename
         #os.rename(abs_path, new_abs_path)
+        return new_file_name
 
     def parse(self, path):
         """
-        Find links and img in html
+        Find links and img in html. This is the entrance.
         """
         logger.debug(path)
         content = open(path).read().decode(self.CHARSET)
@@ -89,6 +93,9 @@ class Parser(object):
         res_list = pattern.findall(content)
 
         (parent_path, file_name) = os.path.split(path)
+        relative_parent_path_len = len(parent_path) - len(self.BASE_PATH)
+        relative_parent_path = parent_path[0-relative_parent_path_len:]
+        logger.debug("%s %s %s" % (parent_path, file_name, relative_parent_path))
 
         #TODO
         #[ ] Dive into css,js... files
@@ -97,15 +104,18 @@ class Parser(object):
         for item in res_list:
             logger.debug(item[1])
             if item[1].endswith('.css'):
-                logger.warning("CSS FOUND")
-                abs_path = parent_path % ('/' if item[1].startswith('.') else '', item[1])
+                if item[1].startswith('.') or item[1].startswith('..'):
+                    abs_path = (parent_path + '%s%s') % ('/', item[1])
+                elif item[1].startswith("/"):
+                    abs_path = self.BASE_PATH + item[1]
+                logger.debug(abs_path)
                 self.__css_parse(abs_path)
             elif item[1].endswith('.js'):
-                logger.warning('JS FOUND')
+                pass
             elif item[1].endswith('.png'):
-                logger.warning('PNG Found')
-                abs_path = parent_path % ('/' if item[1].startswith('.') else '', item[1])
-                self.__binary_parse(abs_path)
+                pass
+                #abs_path = parent_path % ('/' if item[1].startswith('.') else '', item[1])
+                #self.__binary_parse(abs_path)
 
 
 parser = Parser()  # build a runtime parser
