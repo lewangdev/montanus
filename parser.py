@@ -20,7 +20,7 @@ class Parser(object):
     TEXT_FILE_EXT = ['.css', '.js', '.jsp']
 
     HTML_REGEX = '(<link.*href|<script.*src|<img.*src)="(.*?)"'
-    CSS_REGEX = '(@import.*url|backgroud.*url|background-image.*url).*\(["\']*(.*?)["\']*\)'
+    CSS_REGEX = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
     RESOURCE_MAP = {}
     BASE_PATH = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
 
@@ -28,15 +28,15 @@ class Parser(object):
         pass
 
     def __binary_parse(self, path):
-        new_abs_path = utils.unique_name(path, 10, '_')
-        if new_abs_path is None:
+        new_path = utils.unique_name(path, 10, '_')
+        if new_path is None:
             return None
-        (parent_path, new_file_name) = os.path.split(new_abs_path)
+        (parent_path, new_file_name) = os.path.split(new_path)
         logger.debug(new_file_name)
 
         #TODO
         #[x] Rename
-        #os.rename(abs_path, new_abs_path)
+        os.rename(path, new_path)
         return new_file_name
 
     def parse(self, path):
@@ -71,14 +71,13 @@ class Parser(object):
         #[ ] Dive into css,js... files
         #[x] Get md5 of image files
         for item in res_list:
-            logger.debug(item[1])
+            logger.debug('Found %s ' % item[1])
             if item[1].startswith('.') or item[1].startswith('..'):
                 abs_path = (parent_path + '%s%s') % ('/', item[1])
             elif item[1].startswith("/"):
                 abs_path = self.BASE_PATH + item[1]
             else:
                 continue
-            logger.debug(abs_path)
             (file_name_with_path, file_ext) = os.path.splitext(abs_path)
             if file_ext in self.BINARY_FILE_EXTS:
                 new_file_name = self.__binary_parse(abs_path)
@@ -89,20 +88,32 @@ class Parser(object):
 
         for item in res_list:
             if item[1].startswith('.') or item[1].startswith('..'):
-                abs_path = (parent_path + '%s%s') % ('/', item[1])
+                item_abs_path = (parent_path + '%s%s') % ('/', item[1])
             elif item[1].startswith("/"):
-                abs_path = self.BASE_PATH + item[1]
+                item_abs_path = self.BASE_PATH + item[1]
             else:
                 continue
-            #if self.RESOURCE_MAP[abs_path] is not None:
-            logger.success("%s %s" % (abs_path, self.RESOURCE_MAP.get(str(abs_path))))
-            #logger.debug("Replace %s to %s" % (item[1], self.RESOURCE_MAP[abs_path]))
-                #content.replace(item[1], self.RESOURCE_MAP[abs_path])
-        #print content
+            if self.RESOURCE_MAP.get(item_abs_path) is not None:
+                (parent_path, file_name) = os.path.split(item[1])
+                logger.debug('Path: %s %s' % (parent_path, file_name))
+                logger.debug('Replace %s to %s' % ( item[1], (parent_path + '/%s') % self.RESOURCE_MAP.get(item_abs_path)))
+                content = content.replace(item[1], (parent_path + '/%s') % self.RESOURCE_MAP.get(item_abs_path))
+
+        content = content.encode('utf-8')
+        file = open(path, 'w')
+        logger.debug(path)
+        file.write(content)
+
+        new_path = utils.unique_name(path, 10, '_')
+        if new_path is not None and new_path.endswith('.css') and new_path.endswith('.js'):
+            logger.debug(new_path)
+            os.rename(path, new_path)
+
 
 parser = Parser()  # build a runtime parser
 
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp/general/login.jsp'
+    #path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp/css/bootstrap-cerulean.css'
     parser.parse(path)
