@@ -3,17 +3,23 @@
 import os
 import errno
 import hashlib
+import traceback
 
 def unique_name(path, length, cat):
     """
     """
     method = hashlib.md5()
-    fh = open(path, 'rb')
-    method.update(fh.read())
-    fh.close()
-    hex_str = method.hexdigest()
-    (file_name, ext_name) = os.path.splitext(path)
-    return "".join([file_name, cat, hex_str[0:length], ext_name])
+    try:
+        fh = open(path, 'rb')
+        method.update(fh.read())
+        fh.close()
+        hex_str = method.hexdigest()
+        (file_name, ext_name) = os.path.splitext(path)
+        return "".join([file_name, cat, hex_str[0:length], ext_name])
+    except Exception:
+        traceback.print_exc()
+        return None
+
 
 def mkdir_p(path):
     """mkdir -p
