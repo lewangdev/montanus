@@ -17,7 +17,8 @@ class Parser(object):
             '.jfif', '.jpe', '.jpeg', '.jpg'
             ]
 
-    TEXT_FILE_EXT = ['.css', '.js', '.jsp']
+    TEXT_FILE_EXT = ['.css', '.js', '.jsp', '.html']
+    ENTRY_FILE_EXT = ['.jsp', '.html']
 
     HTML_REGEX = '(<link.*href|<script.*src|<img.*src)="(.*?)"'
     CSS_REGEX = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
@@ -27,7 +28,7 @@ class Parser(object):
     def __init__(self):
         pass
 
-    def __binary_parse(self, path):
+    def rename(self, path):
         new_path = utils.unique_name(path, 10, '_')
         if new_path is None:
             return None
@@ -58,7 +59,10 @@ class Parser(object):
         elif lower_path.endswith('js'):
             regex = self.HTML_REGEX
 
-        content = open(path).read().decode(self.CHARSET)
+        try:
+            content = open(path).read().decode(self.CHARSET)
+        except Exception:
+            return
         pattern = re.compile(regex, re.IGNORECASE)
         res_list = pattern.findall(content)
 
@@ -68,7 +72,7 @@ class Parser(object):
         logger.debug("File Meta : %s %s %s" % (parent_path, file_name, relative_parent_path))
 
         #TODO
-        #[ ] Dive into css,js... files
+        #[x] Dive into css,js... files
         #[x] Get md5 of image files
         for item in res_list:
             logger.debug('Found %s ' % item[1])
@@ -80,9 +84,10 @@ class Parser(object):
                 continue
             (file_name_with_path, file_ext) = os.path.splitext(abs_path)
             if file_ext in self.BINARY_FILE_EXTS:
-                new_file_name = self.__binary_parse(abs_path)
-                logger.success(new_file_name)
-                self.RESOURCE_MAP[abs_path] = new_file_name
+                if self.RESOURCE_MAP.get(abs_path) is None:
+                    new_file_name = self.rename(abs_path)
+                    logger.success(new_file_name)
+                    self.RESOURCE_MAP[abs_path] = new_file_name
             else:
                 self.parse(abs_path)
 
@@ -103,17 +108,32 @@ class Parser(object):
         file = open(path, 'w')
         logger.debug(path)
         file.write(content)
+        file.close()
 
-        new_path = utils.unique_name(path, 10, '_')
-        if new_path is not None and new_path.endswith('.css') and new_path.endswith('.js'):
-            logger.debug(new_path)
-            os.rename(path, new_path)
+        if self.RESOURCE_MAP.get(path) is None and (path.endswith('.css') or path.endswith('.js')):
+            new_path =  self.rename(path)
+            if new_path is not None:
+                logger.debug(new_path)
+                self.RESOURCE_MAP[path] = new_path
 
+    def process(self, base_path):
+        '''Find all entry files'''
+        file_name_list = os.listdir(base_path)
+        for file_name in file_name_list:
+            logger.debug(file_name)
+            path = '%s/%s' % (base_path, file_name)
+            (file_name_with_path, file_ext) = os.path.splitext(path)
+            if os.path.isdir(path):
+                self.process(path)
+            elif file_ext in self.ENTRY_FILE_EXT:
+                self.parse(path)
 
 parser = Parser()  # build a runtime parser
 
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
-    path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp/general/login.jsp'
+    #path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp/general/login.jsp'
     #path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp/css/bootstrap-cerulean.css'
-    parser.parse(path)
+    #parser.parse(path)
+    parser.process(parser.BASE_PATH)
+    print parser.RESOURCE_MAP
