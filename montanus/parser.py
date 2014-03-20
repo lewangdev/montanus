@@ -118,24 +118,23 @@ class Parser(object):
                 logger.debug(new_path)
                 self.RESOURCE_MAP[path] = new_path
 
-    def process(self, base_path):
+    def find(self, base_path):
         '''Find all entry files'''
-        self.BASE_PATH = base_path
-        self.URI_PREFIX = "%s://%s" % (config.default['protocol'], config.default['domain'])
         file_name_list = os.listdir(base_path)
         for file_name in file_name_list:
             logger.debug(file_name)
             path = '%s/%s' % (base_path, file_name)
             (file_name_with_path, file_ext) = os.path.splitext(path)
             if os.path.isdir(path):
-                self.process(path)
+                self.find(path)
             elif file_ext in self.ENTRY_FILE_EXT:
                 self.parse(path)
 
+    def process(self):
+        self.find(self.BASE_PATH)
         logger.success("All files have been processed")
 
 parser = Parser()  # build a runtime parser
 
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
-    parser.process(parser.BASE_PATH)

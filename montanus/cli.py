@@ -22,7 +22,9 @@ def task(task_func):
 @task
 def build():
     """"""
-    parser.process(config.default['base_dir'])
+    parser.BASE_PATH = config.default['base_dir']
+    parser.URI_PREFIX = "%s://%s" % (config.default['protocol'], config.default['domain'])
+    parser.process()
     logger.success("Build Done")
 
 
