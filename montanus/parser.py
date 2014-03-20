@@ -3,6 +3,7 @@
 #import config
 from .logger import logger
 import utils
+from config import config
 
 import re
 import logging
@@ -24,12 +25,13 @@ class Parser(object):
     CSS_REGEX = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
     RESOURCE_MAP = {}
     BASE_PATH = '.'
+    URI_PREFIX = ''
 
     def __init__(self):
         pass
 
     def rename(self, path):
-        new_path = utils.unique_name(path, 10, '_')
+        new_path = utils.unique_name(path, config.default['md5_length'], '_')
         if new_path is None:
             return None
         (parent_path, new_file_name) = os.path.split(new_path)
@@ -102,7 +104,7 @@ class Parser(object):
                 (parent_path, file_name) = os.path.split(item[1])
                 logger.debug('Path: %s %s' % (parent_path, file_name))
                 logger.debug('Replace %s to %s' % ( item[1], (parent_path + '/%s') % self.RESOURCE_MAP.get(item_abs_path)))
-                content = content.replace(item[1], (parent_path + '/%s') % self.RESOURCE_MAP.get(item_abs_path))
+                content = content.replace(item[1], ('%s' + parent_path + '/%s') % (self.URI_PREFIX, self.RESOURCE_MAP.get(item_abs_path)))
 
         content = content.encode('utf-8')
         file = open(path, 'w')
@@ -118,6 +120,8 @@ class Parser(object):
 
     def process(self, base_path):
         '''Find all entry files'''
+        self.BASE_PATH = base_path
+        self.URI_PREFIX = "%s://%s" % (config.default['protocol'], config.default['domain'])
         file_name_list = os.listdir(base_path)
         for file_name in file_name_list:
             logger.debug(file_name)
@@ -127,6 +131,8 @@ class Parser(object):
                 self.process(path)
             elif file_ext in self.ENTRY_FILE_EXT:
                 self.parse(path)
+
+        logger.success("All files have been processed")
 
 parser = Parser()  # build a runtime parser
 

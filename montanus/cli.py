@@ -43,7 +43,7 @@ Options:
   """
     arguments = docopt(main.__doc__, version='montanus version: ' + version)
     # Set logger's level to info
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     base_dir = arguments.get('BASE_DIR')
     config.default['base_dir'] = base_dir
@@ -67,7 +67,8 @@ Options:
         if v is not None:
             config.default[k] = v
 
-    print config.default
+    logger.debug(config.default)
+    build()
 
 
 if __name__ == '__main__':
