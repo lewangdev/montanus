@@ -3,11 +3,9 @@
 """cli interface"""
 
 import logging
-import sys
 from os.path import dirname
 from .logger import logger
 from . import version
-from .generator import generator
 from docopt import docopt
 
 def task(task_func):
@@ -45,9 +43,8 @@ def main():
 Options:
   -h --help     show this help message
   -v --version  show version
-  --watch       watch source files for changes
 
-Commands:
+Commandt:
   build         build static files to CDN version
   clean         remove files built by montanus
   """

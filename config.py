@@ -3,6 +3,7 @@
 """Configuration manager, config is in json"""
 
 from exceptions import ConfigSyntaxError
+from . import charset
 
 from os.path import join
 from os.path import exists
@@ -17,6 +18,8 @@ class Config(object):
     # default configuration
     default = {
         'project': {
+            'protocol': 'http',
+            'domain': 'ezpress.1tianxia.com',
             'charset': 'utf8',
             'md5_length': 10,
             'md5_cat_str': '_'

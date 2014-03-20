@@ -4,3 +4,4 @@
 """global vars"""
 
 version = "0.0.0"
+charset = "utf8"
