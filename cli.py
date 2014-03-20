@@ -4,9 +4,11 @@
 
 import logging
 from os.path import dirname
+from docopt import docopt
+
 from .logger import logger
 from . import version
-from docopt import docopt
+from .utils import join
 
 def task(task_func):
     def wrapper(*args, **kwargs):
@@ -27,12 +29,6 @@ def build():
 
 @task
 def clean():
-    """rm -rf static files"""
-    paths = [
-    ]
-
-    cmd = ["rm", "-rf"] + paths
-    call(cmd)
     logger.success("clean done")
 
 
@@ -44,7 +40,7 @@ Options:
   -h --help     show this help message
   -v --version  show version
 
-Commandt:
+Command:
   build         build static files to CDN version
   clean         remove files built by montanus
   """
@@ -59,3 +55,6 @@ Commandt:
         clean()
     else:
         exit(main.__doc__)
+
+if __name__ == '__main__':
+    main()
