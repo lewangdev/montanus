@@ -3,12 +3,13 @@
 """cli interface"""
 
 import logging
-from os.path import dirname
+from os.path import split
 from docopt import docopt
 
 from .logger import logger
 from . import version
-from .utils import join
+from .config import config
+from .parser import parser
 
 def task(task_func):
     def wrapper(*args, **kwargs):
@@ -17,44 +18,57 @@ def task(task_func):
         return task_func(*args, **kwargs)
     return wrapper
 
+
 @task
 def build():
     """"""
-    lib_dir = dirname(__file__)  # this library's directory
-    res = join(lib_dir, "resources")
+    parser.process(config.default['base_dir'])
     logger.success("Build Done")
-    logger.info("Please edit config.json to meet our needs")
-    logger.info("Run 'make clean' to remove built static files")
-
-
-@task
-def clean():
-    logger.success("clean done")
 
 
 def main():
     """Usage:
-  montanus (build|clean)
+  montanus BASE_DIR
+
+Arguments:
+    BASE_DIR     Base directory
 
 Options:
-  -h --help     show this help message
-  -v --version  show version
-
-Command:
-  build         build static files to CDN version
-  clean         remove files built by montanus
+  -h --help              Show this help message
+  -v --version           Show version
+  --with-protocol=<p>    Set protocol [Default: http]
+  --with-domain=<d>      Set CDN domain
+  --md5-len=<l>          Set MD5 Length [Default: 10]
+  --conf=<f>             Set config file path
   """
-
     arguments = docopt(main.__doc__, version='montanus version: ' + version)
-    # set logger's level to info
+    # Set logger's level to info
     logger.setLevel(logging.INFO)
 
-    if arguments["build"]:
-        build()
-    elif arguments["clean"]:
-        clean()
-    else:
-        exit(main.__doc__)
+    base_dir = arguments.get('BASE_DIR')
+    config.default['base_dir'] = base_dir
+
+    conf_file = arguments.get('--conf')
+    if conf_file is not None:
+        (config.filepath, config.filename) = split(conf_file)
+        conf_config = config.read()
+
+        for (k, v) in conf_config.items():
+            if v is not None:
+                config.default[k] = v
+
+    command_config = {
+        'protocol': arguments.get('--with-protocol'),
+        'domain': arguments.get('--with-domain'),
+        'md5_len': arguments.get('--md5-len')
+    }
+
+    for (k, v) in command_config.items():
+        if v is not None:
+            config.default[k] = v
+
+    print config.default
+
 
 if __name__ == '__main__':
     main()

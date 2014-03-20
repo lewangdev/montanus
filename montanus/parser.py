@@ -1,7 +1,7 @@
 # coding=utf8
 
 #import config
-from logger import logger
+from .logger import logger
 import utils
 
 import re
@@ -23,7 +23,7 @@ class Parser(object):
     HTML_REGEX = '(<link.*href|<script.*src|<img.*src)="(.*?)"'
     CSS_REGEX = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
     RESOURCE_MAP = {}
-    BASE_PATH = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
+    BASE_PATH = '.'
 
     def __init__(self):
         pass
@@ -132,8 +132,4 @@ parser = Parser()  # build a runtime parser
 
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
-    #path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp/general/login.jsp'
-    #path = '/Users/wangle/Workspace/gitlab/proto/src/main/webapp/css/bootstrap-cerulean.css'
-    #parser.parse(path)
     parser.process(parser.BASE_PATH)
-    print parser.RESOURCE_MAP

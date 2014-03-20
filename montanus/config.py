@@ -2,7 +2,7 @@
 
 """Configuration manager, config is in json"""
 
-from exceptions import ConfigSyntaxError
+from .exceptions import ConfigSyntaxError
 from . import charset
 
 from os.path import join
@@ -17,14 +17,12 @@ class Config(object):
     filepath = join(".", filename)
     # default configuration
     default = {
-        'project': {
+            "base_dir":".",
             'protocol': 'http',
-            'domain': 'ezpress.1tianxia.com',
-            'charset': 'utf8',
+            'domain': 'www.1tianxiadn.com',
             'md5_length': 10,
             'md5_cat_str': '_'
         }
-    }
 
     def read(self):
         """Read and parse config, return a dict"""
