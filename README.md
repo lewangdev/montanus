@@ -8,13 +8,10 @@
 支持的二进制文件类型：
 
 ```python
-IMAGE_FILE_EXTS = [
-    'svg', 'tif', 'tiff', 'wbmp',
-    'png', 'bmp', 'fax', 'gif',
-    'ico', 'jfif', 'jpe', 'jpeg',
-    'jpg', 'woff', 'cur', 'webp',
-    'swf', 'ttf', 'eot'
-    ]
+BINARY_FILE_EXTS = [
+            '.png', '.bmp', '.gif',  '.ico',
+            '.jfif', '.jpe', '.jpeg', '.jpg'
+            ]
 ```
 
 ### 文本文件递归解析
@@ -22,12 +19,7 @@ IMAGE_FILE_EXTS = [
 支持的文本文件类型：
 
 ```python
-TEXT_FILE_EXTS = [
-    'css', 'tpl', 'js', 'php',
-    'txt', 'json', 'xml', 'htm',
-    'text', 'xhtml', 'html', 'md',
-    'coffee', 'less', 'sass', 'jsp'
-    ]
+TEXT_FILE_EXT = ['.css', '.js', '.jsp', '.html']
 ```
 
 #### 示例
@@ -88,7 +80,27 @@ HTML 包括 JSP，PHP 以及一些模版语言
 <img src="path">
 ```
 
+## HowTo
 
+```shell
+(.env)➜  montanus git:(master) ✗ python -m montanus.cli -h
+Usage:
+  montanus BASE_DIR
 
+Arguments:
+    BASE_DIR     Base directory
+
+Options:
+  -h --help              Show this help message
+  -v --version           Show version
+  --with-protocol=<p>    Set protocol [Default: http]
+  --with-domain=<d>      Set CDN domain
+  --md5-len=<l>          Set MD5 Length [Default: 10]
+  --conf=<f>             Set config file path
+```
+
+```shell
+python -m montanus.cli '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
+```
 
 
