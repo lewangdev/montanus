@@ -1,4 +1,5 @@
-# coding=utf8
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
 
 """cli interface"""
 
@@ -11,15 +12,6 @@ from . import version
 from .config import config
 from .parser import parser
 
-def task(task_func):
-    def wrapper(*args, **kwargs):
-        if task_func.__doc__:
-            logger.info(task_func.__doc__)
-        return task_func(*args, **kwargs)
-    return wrapper
-
-
-@task
 def build():
     """"""
     parser.BASE_PATH = config.default['base_dir']
@@ -30,10 +22,10 @@ def build():
 
 def main():
     """Usage:
-  montanus BASE_DIR
+  montanus ROOT_DIR
 
 Arguments:
-    BASE_DIR     Base directory
+    ROOT_DIR     Root directory where locates the webapp
 
 Options:
   -h --help              Show this help message

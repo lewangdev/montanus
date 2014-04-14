@@ -1,42 +1,30 @@
-# coding=utf8
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
 
 """Configuration manager, config is in json"""
 
-from .exceptions import ConfigSyntaxError
-from . import charset
-
+import toml
 from os.path import join
 from os.path import exists
-from json import loads
 
 
 class Config(object):
     """Configuration manager"""
 
-    filename = "config.json"
+    filename = "config.toml"
     filepath = join(".", filename)
-    # default configuration
-    default = {
-            "base_dir":".",
-            'protocol': 'http',
-            'domain': 'www.1tianxiadn.com',
-            'md5_length': 10,
-            'md5_cat_str': '_'
-        }
 
-    def read(self):
-        """Read and parse config, return a dict"""
+def read(self):
+    """Read and parse config, return a dict"""
 
-        if not exists(self.filepath):
-            # if not exists, touch one
-            open(self.filepath, "a").close()
+    if not exists(self.filepath):
+        # if not exists, touch one
+        open(self.filepath, "a").close()
 
-        content = open(self.filepath).read().decode(charset)
-        try:
-            config = loads(content)
-        except TypeError:
-            raise ConfigSyntaxError
+    with open("conf.toml") as conffile:
+        config = toml.loads(conffile.read())
 
-        return config
+    return config
 
 config = Config()  # build a config instance
+

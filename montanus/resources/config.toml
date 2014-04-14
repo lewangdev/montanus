@@ -1,0 +1,4 @@
+root_dir    = ".",
+domains     = ["s0.ga.1txdn.com", "s1.ga.1txdn.com"],
+md5_length  = 10,
+md5_cat_str = "_"

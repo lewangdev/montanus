@@ -1,6 +1,7 @@
 # coding=utf8
 
-#import config
+#importdd config
+
 from .logger import logger
 import utils
 from config import config
@@ -21,7 +22,7 @@ class Parser(object):
     TEXT_FILE_EXT = ['.css', '.js', '.jsp', '.html']
     ENTRY_FILE_EXT = ['.jsp', '.html']
 
-    HTML_REGEX = '(<link.*href|<script.*src|<img.*src)="(.*?)"'
+    HTML_REGEX = '(<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
     CSS_REGEX = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
     RESOURCE_MAP = {}
     BASE_PATH = '.'
@@ -40,6 +41,7 @@ class Parser(object):
         #TODO
         #[x] Rename
         os.rename(path, new_path)
+        os.co
         return new_file_name
 
     def parse(self, path):

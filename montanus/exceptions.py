@@ -8,5 +8,5 @@ class MontanusException(Exception):
     pass
 
 class ConfigSyntaxError(MontanusException):
-    """JSON Syntax Error occurred in config.json"""
+    """JSON Syntax Error occurred in config.toml"""
     pass
