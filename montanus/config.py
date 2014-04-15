@@ -4,27 +4,36 @@
 """Configuration manager, config is in json"""
 
 import toml
+import logging
+from logger import logger
 from os.path import join
 from os.path import exists
 
 
-class Config(object):
+
+class Config:
     """Configuration manager"""
 
     filename = "config.toml"
     filepath = join(".", filename)
 
-def read(self):
-    """Read and parse config, return a dict"""
 
-    if not exists(self.filepath):
-        # if not exists, touch one
-        open(self.filepath, "a").close()
+    def read(self, path=None):
+        """Read and parse config, return a dict"""
+        if path is None:
+            path = self.filepath
 
-    with open("conf.toml") as conffile:
-        config = toml.loads(conffile.read())
+        if not exists(path):
+            return None
 
-    return config
+        with open(path) as conffile:
+            config = toml.loads(conffile.read())
+            logger.debug(config)
+            return config
+
 
 config = Config()  # build a config instance
 
+if __name__ == '__main__':
+    logger.setLevel(logging.DEBUG)
+    config.read()

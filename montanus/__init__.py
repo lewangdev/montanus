@@ -1,7 +1,4 @@
-# coding=utf8
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
 # montanus - a lightweight solution for front end integration for CDN
 
-"""global vars"""
-
-version = "0.0.0"
-charset = "utf8"

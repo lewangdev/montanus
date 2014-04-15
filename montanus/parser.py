@@ -2,7 +2,7 @@
 
 #importdd config
 
-from .logger import logger
+from logger import logger
 import utils
 from config import config
 

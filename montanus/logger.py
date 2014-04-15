@@ -21,6 +21,7 @@ ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
 
+
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     logger.info('info')
