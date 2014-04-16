@@ -25,6 +25,7 @@ from docopt import docopt
 from logger import logger
 from config import config
 from parser import parser
+from utils import DictWrapper
 
 __version__ = '0.0.1'
 
@@ -33,25 +34,7 @@ def build():
     """Start to build the package to CDN requirement"""
     parser.custom_config = parse_arguments()
     parser.process()
-
-
-class DictWrapper(dict):
-    """Dict Wrapper"""
-
-    def __init__(self, d):
-        self.dict = d
-        for k, v in d.items():
-            setattr(self, k, v)
-
-    def __getattr__(self, i):
-        if i in self:
-            return self[i]
-        else:
-            return None
-
-    def __str__(self):
-        return self.dict.__str__()
-
+    logger.info(parser.statistics)
 
 def parse_arguments():
     """Get all arguments as a dict object"""
@@ -74,7 +57,7 @@ def parse_arguments():
             else arguments.get('<templates_path>'),
         'protocol': arguments.get('--with-protocol'),
         'domains': arguments.get('--with-domains').split(','),
-        'md5_len': arguments.get('--with-md5-len'),
+        'md5_len': int(arguments.get('--with-md5-len')),
         'md5_concat_by': arguments.get('--with-md5-concat-by')
     }
     logger.debug(command_config)
@@ -88,5 +71,5 @@ def parse_arguments():
 
 
 if __name__ == '__main__':
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     build()

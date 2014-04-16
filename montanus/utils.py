@@ -37,3 +37,19 @@ def join(*p):
     """return normpath version of path.join"""
     return os.path.normpath(os.path.join(*p))
 
+class DictWrapper(dict):
+    """Dict Wrapper"""
+
+    def __init__(self, d):
+        self.dict = d
+        for k, v in d.items():
+            setattr(self, k, v)
+
+    def __getattr__(self, i):
+        if i in self:
+            return self[i]
+        else:
+            return None
+
+    def __str__(self):
+        return self.dict.__str__()

@@ -1,32 +1,38 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from logger import logger
-from random import sample
 import utils
 import re
 import logging
 import os
+
+from logger import logger
+from random import sample
 
 
 class Parser(object):
     """
     Find and Parse all static files to CDN requirement
     """
-    __charset = 'utf-8'
+    __charset          = 'utf-8'
     __binary_file_exts = [
         '.png', '.bmp', '.gif', '.ico',
         '.jfif', '.jpe', '.jpeg', '.jpg'
     ]
-
-    __text_file_exts = ['.css', '.js', '.jsp', '.html']
+    __text_file_exts = ['.css', '.js']
     __templates_exts = ['.jsp', '.html']
 
     __template_regex = '(<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
-    __css_regex = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
+    __css_regex      = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
+    __js_regex       = '(<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
+
     __resource_map = {}
 
     custom_config = None
+    statistics = {
+        "static_file_count": 0,
+        "not_found_count": 0
+    }
 
     def __init__(self):
         pass
@@ -48,7 +54,6 @@ class Parser(object):
         if new_path is None:
             return None
         (parent_path, new_file_name) = os.path.split(new_path)
-        logger.debug(new_file_name)
 
         #TODO
         #[x] Rename
@@ -64,102 +69,106 @@ class Parser(object):
                 return True
         return False
 
+    def gen_path(self, parent_file_path, url):
+        if self.is_a_link(url):
+            return None
+        (parent_path, parent_file_name) = os.path.split(parent_file_path)
+        if url.startswith('./') or url.startswith('../'):
+            return '%s/%s' % (parent_path, url)
+        elif url.startswith('/'):
+            return '%s%s' % (self.get_static_files_path(), url)
+        else:
+            # Must be some errors
+            logger.error(url)
+            return None
+
+    def parse_static_file(self, parent_file_path, url):
+        path = self.gen_path(parent_file_path, url)
+        if path is None:
+            return
+
+        if not os.path.exists(path):
+            logger.warning("%s not found" % path)
+            self.statistics["not_found_count"] += 1
+            return
+
+        (url_without_ext, file_ext) = os.path.splitext(url)
+        if file_ext in self.__binary_file_exts:
+            if self.__resource_map.get(path) is None:
+                name_with_md5 = self.rename_with_md5(path)
+                self.__resource_map[path] = name_with_md5
+                logger.debug('%s <- %s' % (name_with_md5, path))
+            return
+
+        elif file_ext in self.__text_file_exts:
+            regex = self.__css_regex
+            if url.endswith('.js'):
+                regex = self.__js_regex
+
+            logger.info("path:%s" % path)
+            with open(path, 'r') as staticfile:
+                content = staticfile.read().decode(self.__charset)
+                pattern = re.compile(regex, re.IGNORECASE)
+                targets_matched = pattern.findall(content)
+                for target in targets_matched:
+                    static_file_url = target[1]
+                    logger.info("%s waiting for proc" % static_file_url)
+                    if not self.is_a_link(static_file_url):
+                        logger.debug("%s <- %s" % (static_file_url.decode(self.__charset), url.decode(self.__charset)))
+                        self.parse_static_file(path, static_file_url)
+                        content = self.replace_with_cdnurl(path, static_file_url, content)
+
+            with open(path, 'w') as staticfile:
+                staticfile.write(content.encode(self.__charset))
+                if self.__resource_map.get(path) is None:
+                    path_with_md5 = self.rename_with_md5(path)
+                    if path_with_md5 is not None:
+                        self.__resource_map[path] = path_with_md5
+
+    def replace_with_cdnurl(self, parent_path, url_in_parent, content):
+        static_file_path = self.gen_path(parent_path, url_in_parent)
+        if self.__resource_map.get(static_file_path) is not None:
+            (base_path, file_name) = os.path.split(url_in_parent)
+            name_with_md5 = self.__resource_map.get(static_file_path)
+            static_file_cdnurl = "%s%s%s" % (self.get_url_prefix(), base_path, name_with_md5)
+            content = content.replace(url_in_parent, static_file_cdnurl)
+        return content
+
     def parse_template(self, path):
         """
         Find links and img in html. This is the entrance.
         So no need to parse html-like files
         """
-        if self.is_a_link(path):
-            return
-
-        (file_name_with_path, file_ext) = os.path.splitext(path)
-        if not file_ext in self.__text_file_exts:
-            return
-
         regex = self.__template_regex
-        if path.endswith('css'):
-            regex = self.__css_regex
-        elif path.endswith('js'):
-            regex = self.__template_regex
+        with open(path) as templatefile:
+            content = templatefile.read().decode(self.__charset)
+            pattern = re.compile(regex, re.IGNORECASE)
+            targets_matched = pattern.findall(content)
+            for target in targets_matched:
+                static_file_url= target[1]
+                logger.debug("%s <- %s" % (static_file_url.decode(self.__charset), path.decode(self.__charset)))
+                self.statistics["static_file_count"] += 1
+                self.parse_static_file(path, static_file_url)
+                content = self.replace_with_cdnurl(path, static_file_url, content)
 
-        try:
-            content = open(path).read().decode(self.__charset)
-        except Exception:
-            return
+        with open(path, 'w') as staticfile:
+            staticfile.write(content.encode(self.__charset))
 
-        pattern = re.compile(regex, re.IGNORECASE)
-        res_list = pattern.findall(content)
-
-        (parent_path, file_name) = os.path.split(path)
-        relative_parent_path_len = len(parent_path) - len(self.get_templates_path())
-        relative_parent_path = parent_path[0 - relative_parent_path_len:]
-        logger.debug("File Meta : %s %s %s" % (
-            parent_path, file_name, relative_parent_path))
-
-        #TODO
-        #[x] Dive into css,js... files
-        #[x] Get md5 of image files
-        for item in res_list:
-            logger.debug('Found %s ' % item[1])
-            if item[1].startswith('.') or item[1].startswith('..'):
-                abs_path = (parent_path + '%s%s') % ('/', item[1])
-            elif item[1].startswith("/"):
-                abs_path = self.get_templates_path() + item[1]
-            else:
-                continue
-            (file_name_with_path, file_ext) = os.path.splitext(abs_path)
-            if file_ext in self.__binary_file_exts:
-                if self.__resource_map.get(abs_path) is None:
-                    new_file_name = self.rename_with_md5(abs_path)
-                    logger.debug(new_file_name)
-                    self.__resource_map[abs_path] = new_file_name
-            else:
-                self.parse_template(abs_path)
-
-        for item in res_list:
-            if item[1].startswith('.') or item[1].startswith('..'):
-                item_abs_path = (parent_path + '%s%s') % ('/', item[1])
-            elif item[1].startswith("/"):
-                item_abs_path = self.get_templates_path() + item[1]
-            else:
-                continue
-            if self.__resource_map.get(item_abs_path) is not None:
-                (parent_path, file_name) = os.path.split(item[1])
-                logger.debug('Path: %s %s' % (parent_path, file_name))
-                logger.debug('Replace %s to %s' % (item[1],
-                                                   ( parent_path + '/%s') % self.__resource_map.get(item_abs_path)))
-                content = content.replace(item[1],
-                                          ('%s' + parent_path + '/%s') % (
-                                              self.get_url_prefix(),
-                                              self.__resource_map.get(
-                                                  item_abs_path)))
-
-        content = content.encode(self.__charset)
-        file_handler = open(path, 'w')
-        file_handler.write(content)
-        file_handler.close()
-
-        if self.__resource_map.get(path) is None and (
-                    path.endswith('.css') or path.endswith('.js')):
-            new_path = self.rename_with_md5(path)
-            if new_path is not None:
-                logger.debug(new_path)
-                self.__resource_map[path] = new_path
-
-    def find(self, parent_path):
+    def find_all_templates(self, parent_path):
         """Find all template files"""
         templates = os.listdir(parent_path)
         for template_name in templates:
             path = '%s/%s' % (parent_path, template_name)
             if os.path.isdir(path):
-                self.find(path)
+                self.find_all_templates(path)
             else:
                 (full_path_without_ext, template_ext) = os.path.splitext(path)
                 if template_ext in self.__templates_exts:
                     self.parse_template(path)
 
     def process(self):
-        self.find(self.get_templates_path())
+        self.find_all_templates(self.get_templates_path())
+        logger.debug('MAP:%s' % self.__resource_map)
 
 
 parser = Parser()  # build a runtime parser
