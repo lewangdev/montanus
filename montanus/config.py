@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-"""Configuration manager, config is in json"""
+"""Configuration manager, config is in TOML"""
 
 import toml
 import logging

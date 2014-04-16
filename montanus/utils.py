@@ -1,4 +1,5 @@
-# coding=utf8
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
 
 import os
 import errno
@@ -7,6 +8,7 @@ import traceback
 
 def unique_name(path, length, cat):
     """
+    Rename a file according to the md5 of its content
     """
     method = hashlib.md5()
     try:

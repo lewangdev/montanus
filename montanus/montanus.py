@@ -30,9 +30,9 @@ __version__ = '0.0.1'
 
 
 def build():
-    """"""
+    """Start to build the package to CDN requirement"""
+    parser.custom_config = parse_arguments()
     parser.process()
-    logger.success("Build Done")
 
 
 class DictWrapper(dict):
@@ -54,6 +54,7 @@ class DictWrapper(dict):
 
 
 def parse_arguments():
+    """Get all arguments as a dict object"""
     custom_config = config.read()
     arguments = docopt(__doc__, version='Montanus %s' % __version__)
 
@@ -88,4 +89,4 @@ def parse_arguments():
 
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
-    logger.debug(parse_arguments())
+    build()
