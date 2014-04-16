@@ -10,7 +10,6 @@ from os.path import join
 from os.path import exists
 
 
-
 class Config:
     """Configuration manager"""
 
@@ -24,7 +23,7 @@ class Config:
             path = self.filepath
 
         if not exists(path):
-            return None
+            return {}
 
         with open(path) as conffile:
             config = toml.loads(conffile.read())

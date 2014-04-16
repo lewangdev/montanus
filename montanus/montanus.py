@@ -3,17 +3,19 @@
 """Montanus.
 
 Usage:
-  montanus.py <root_path> [--with-protocol=<p> | --with-domains=<l>i | --with-md5-len=<l> | --with-conf=<f>]
+  montanus.py <templates_path> [--with-static-files-path=<p> | --with-protocol=<p> | --with-domains=<l> | --with-md5-len=<l> | --with-md5-concat-by=<c> | --with-conf=<f>]
   montanus.py (-h | --help)
   montanus.py (-v | --version)
 
 Options:
- -h --help              Show this help message
- -v --version           Show version
- --with-protocol=<p>    Set protocol [Default: http]
- --with-domains=<d>     Set CDN domains [Default: s0.ga.1txdn.com,s1.ga.1txdn.com]
- --with-md5-len=<l>     Set MD5 Length [Default: 10]
- --with-conf=<f>        Set config file path
+ -h --help                          Show this help message
+ -v --version                       Show version
+ --with-static-files-path=<p>       Set protocol, If not set, the value will be the same as template_path
+ --with-protocol=<p>                Set protocol [Default: http]
+ --with-domains=<d>                 Set CDN domains [Default: s0.ga.1txdn.com,s1.ga.1txdn.com]
+ --with-md5-len=<l>                 Set MD5 Length [Default: 10]
+ --with-md5-concat-by=<c>           Set MD5 concatenator [Default: -]
+ --with-conf=<f>                    Set config file path
  """
 
 import logging
@@ -26,16 +28,16 @@ from parser import parser
 
 __version__ = '0.0.1'
 
+
 def build():
     """"""
-    parser.BASE_PATH = config.default['base_dir']
-    parser.URI_PREFIX = "%s://%s" % (config.default['protocol'], config.default['domain'])
     parser.process()
     logger.success("Build Done")
 
 
 class DictWrapper(dict):
     """Dict Wrapper"""
+
     def __init__(self, d):
         self.dict = d
         for k, v in d.items():
@@ -65,10 +67,14 @@ def parse_arguments():
                 custom_config[k] = v
 
     command_config = {
-        'root_path': arguments.get('<root_path>'),
+        'templates_path': arguments.get('<templates_path>'),
+        'static_files_path': arguments.get('--with-static-files-path') \
+            if arguments.get('-with-static-files-path') is not None \
+            else arguments.get('<templates_path>'),
         'protocol': arguments.get('--with-protocol'),
         'domains': arguments.get('--with-domains').split(','),
-        'md5_len': arguments.get('--md5-len')
+        'md5_len': arguments.get('--with-md5-len'),
+        'md5_concat_by': arguments.get('--with-md5-concat-by')
     }
     logger.debug(command_config)
 

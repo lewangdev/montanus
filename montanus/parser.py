@@ -1,38 +1,46 @@
-# coding=utf8
-
-#importdd config
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
 
 from logger import logger
+from random import sample
 import utils
-from config import config
-
 import re
 import logging
 import os
 
+
 class Parser(object):
     """
     """
-    CHARSET = 'utf8'
-    BINARY_FILE_EXTS = [
-            '.png', '.bmp', '.gif',  '.ico',
-            '.jfif', '.jpe', '.jpeg', '.jpg'
-            ]
+    __charset = 'utf-8'
+    __binary_file_exts = [
+        '.png', '.bmp', '.gif', '.ico',
+        '.jfif', '.jpe', '.jpeg', '.jpg'
+    ]
 
-    TEXT_FILE_EXT = ['.css', '.js', '.jsp', '.html']
-    ENTRY_FILE_EXT = ['.jsp', '.html']
+    __text_file_exts = ['.css', '.js', '.jsp', '.html']
+    __entry_file_exts = ['.jsp', '.html']
 
-    HTML_REGEX = '(<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
-    CSS_REGEX = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
-    RESOURCE_MAP = {}
-    BASE_PATH = '.'
-    URI_PREFIX = ''
+    __html_regex = '(<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
+    __css_regex = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
+    __resource_map = {}
+
+    custom_config = None
 
     def __init__(self):
         pass
 
-    def rename(self, path):
-        new_path = utils.unique_name(path, config.default['md5_length'], '_')
+    def get_root_path(self):
+        return self.custom_config.root_path
+
+    def get_url_prefix(self):
+        return "%s://%s" % (
+            self.custom_config.protocol,
+            sample(self.custom_config.domains, 1)[0])
+
+    def rename_with_md5(self, path):
+        new_path = utils.unique_name(path, self.custom_config.md5_length,
+                                     self.custom_config.md5_concat_by)
         if new_path is None:
             return None
         (parent_path, new_file_name) = os.path.split(new_path)
@@ -41,7 +49,6 @@ class Parser(object):
         #TODO
         #[x] Rename
         os.rename(path, new_path)
-        os.co
         return new_file_name
 
     def parse(self, path):
@@ -50,30 +57,32 @@ class Parser(object):
         """
         logger.debug('In Parse %s' % path)
         lower_path = path.lower()
-        if lower_path.startswith("http") or lower_path.startswith("https") or lower_path.startswith("ftp"):
+        if lower_path.startswith("http") or lower_path.startswith(
+                "https") or lower_path.startswith("ftp"):
             return
 
         (file_name_with_path, file_ext) = os.path.splitext(path)
-        if not file_ext in self.TEXT_FILE_EXT:
+        if not file_ext in self.__text_file_exts:
             return
 
-        regex = self.HTML_REGEX
+        regex = self.__html_regex
         if lower_path.endswith('css'):
-            regex = self.CSS_REGEX
+            regex = self.__css_regex
         elif lower_path.endswith('js'):
-            regex = self.HTML_REGEX
+            regex = self.__html_regex
 
         try:
-            content = open(path).read().decode(self.CHARSET)
+            content = open(path).read().decode(self.__charset)
         except Exception:
             return
         pattern = re.compile(regex, re.IGNORECASE)
         res_list = pattern.findall(content)
 
         (parent_path, file_name) = os.path.split(path)
-        relative_parent_path_len = len(parent_path) - len(self.BASE_PATH)
+        relative_parent_path_len = len(parent_path) - len(self.get_root_path())
         relative_parent_path = parent_path[0 - relative_parent_path_len:]
-        logger.debug("File Meta : %s %s %s" % (parent_path, file_name, relative_parent_path))
+        logger.debug("File Meta : %s %s %s" % (
+            parent_path, file_name, relative_parent_path))
 
         #TODO
         #[x] Dive into css,js... files
@@ -83,15 +92,15 @@ class Parser(object):
             if item[1].startswith('.') or item[1].startswith('..'):
                 abs_path = (parent_path + '%s%s') % ('/', item[1])
             elif item[1].startswith("/"):
-                abs_path = self.BASE_PATH + item[1]
+                abs_path = self.get_root_path() + item[1]
             else:
                 continue
             (file_name_with_path, file_ext) = os.path.splitext(abs_path)
-            if file_ext in self.BINARY_FILE_EXTS:
-                if self.RESOURCE_MAP.get(abs_path) is None:
-                    new_file_name = self.rename(abs_path)
+            if file_ext in self.__binary_file_exts:
+                if self.__resource_map.get(abs_path) is None:
+                    new_file_name = self.rename_with_md5(abs_path)
                     logger.success(new_file_name)
-                    self.RESOURCE_MAP[abs_path] = new_file_name
+                    self.__resource_map[abs_path] = new_file_name
             else:
                 self.parse(abs_path)
 
@@ -99,42 +108,46 @@ class Parser(object):
             if item[1].startswith('.') or item[1].startswith('..'):
                 item_abs_path = (parent_path + '%s%s') % ('/', item[1])
             elif item[1].startswith("/"):
-                item_abs_path = self.BASE_PATH + item[1]
+                item_abs_path = self.get_root_path() + item[1]
             else:
                 continue
-            if self.RESOURCE_MAP.get(item_abs_path) is not None:
+            if self.__resource_map.get(item_abs_path) is not None:
                 (parent_path, file_name) = os.path.split(item[1])
                 logger.debug('Path: %s %s' % (parent_path, file_name))
-                logger.debug('Replace %s to %s' % ( item[1], (parent_path + '/%s') % self.RESOURCE_MAP.get(item_abs_path)))
-                content = content.replace(item[1], ('%s' + parent_path + '/%s') % (self.URI_PREFIX, self.RESOURCE_MAP.get(item_abs_path)))
+                logger.debug('Replace %s to %s' % (item[1],
+                                                   ( parent_path + '/%s') % self.__resource_map.get(item_abs_path)))
+                content = content.replace(item[1],
+                                          ('%s' + parent_path + '/%s') % (
+                                              self.get_url_prefix(),
+                                              self.__resource_map.get(
+                                                  item_abs_path)))
 
-        content = content.encode('utf-8')
-        file = open(path, 'w')
-        logger.debug(path)
-        file.write(content)
-        file.close()
+        content = content.encode(self.__charset)
+        file_handler = open(path, 'w')
+        file_handler.write(content)
+        file_handler.close()
 
-        if self.RESOURCE_MAP.get(path) is None and (path.endswith('.css') or path.endswith('.js')):
-            new_path =  self.rename(path)
+        if self.__resource_map.get(path) is None and (
+                    path.endswith('.css') or path.endswith('.js')):
+            new_path = self.rename_with_md5(path)
             if new_path is not None:
                 logger.debug(new_path)
-                self.RESOURCE_MAP[path] = new_path
+                self.__resource_map[path] = new_path
 
-    def find(self, base_path):
-        '''Find all entry files'''
-        file_name_list = os.listdir(base_path)
+    def find(self, root_path):
+        """Find all entry files"""
+        file_name_list = os.listdir(root_path)
         for file_name in file_name_list:
-            logger.debug(file_name)
-            path = '%s/%s' % (base_path, file_name)
+            path = '%s/%s' % (root_path, file_name)
             (file_name_with_path, file_ext) = os.path.splitext(path)
             if os.path.isdir(path):
                 self.find(path)
-            elif file_ext in self.ENTRY_FILE_EXT:
+            elif file_ext in self.__entry_file_exts:
                 self.parse(path)
 
     def process(self):
-        self.find(self.BASE_PATH)
-        logger.success("All files have been processed")
+        self.find(self.get_root_path())
+
 
 parser = Parser()  # build a runtime parser
 
