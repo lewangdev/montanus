@@ -8,10 +8,11 @@
 支持的二进制文件类型：
 
 ```python
-BINARY_FILE_EXTS = [
-            '.png', '.bmp', '.gif',  '.ico',
-            '.jfif', '.jpe', '.jpeg', '.jpg'
-            ]
+ __binary_file_exts = [
+        '.png', '.bmp', '.gif', '.ico',
+        '.jfif', '.jpe', '.jpeg', '.jpg'
+    ]
+
 ```
 
 ### 文本文件递归解析
@@ -19,7 +20,13 @@ BINARY_FILE_EXTS = [
 支持的文本文件类型：
 
 ```python
-TEXT_FILE_EXT = ['.css', '.js', '.jsp', '.html']
+  __text_file_exts = ['.css', '.js']
+```
+
+模版后缀：
+
+```python
+  __templates_exts = ['.jsp', '.html']
 ```
 
 #### 示例
@@ -83,24 +90,27 @@ HTML 包括 JSP，PHP 以及一些模版语言
 ## HowTo
 
 ```shell
-(.env)➜  montanus git:(master) ✗ python -m montanus.cli -h
-Usage:
-  montanus BASE_DIR
+➜  montanus git:(master) ✗ python montanus.py -h                                                                                                                                                                                                                         
+Montanus.
 
-Arguments:
-    BASE_DIR     Base directory
+Usage:
+  montanus.py <templates_path> [--with-static-files-path=<p> | --with-protocol=<p> | --with-domains=<l> | --with-md5-len=<l> | --with-md5-concat-by=<c> | --with-conf=<f>]
+  montanus.py (-h | --help)
+  montanus.py (-v | --version)
 
 Options:
-  -h --help              Show this help message
-  -v --version           Show version
-  --with-protocol=<p>    Set protocol [Default: http]
-  --with-domain=<d>      Set CDN domain
-  --md5-len=<l>          Set MD5 Length [Default: 10]
-  --conf=<f>             Set config file path
+ -h --help                          Show this help message
+ -v --version                       Show version
+ --with-static-files-path=<p>       Set protocol, If not set, the value will be the same as template_path
+ --with-protocol=<p>                Set protocol [Default: http]
+ --with-domains=<d>                 Set CDN domains [Default: s0.ga.1txdn.com,s1.ga.1txdn.com]
+ --with-md5-len=<l>                 Set MD5 Length [Default: 10]
+ --with-md5-concat-by=<c>           Set MD5 concatenator [Default: -]
+ --with-conf=<f>                    Set config file path
 ```
 
 ```shell
-python -m montanus.cli '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
+python montanus.py '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
 ```
 
 
