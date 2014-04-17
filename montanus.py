@@ -10,7 +10,7 @@ Usage:
 Options:
  -h --help                          Show this help message
  -v --version                       Show version
- --with-static-files-path=<p>       Set protocol, If not set, the value will be the same as template_path
+ --with-static-files-path=<p>       Set static file path. If not set, the value will be the same as template_path
  --with-protocol=<p>                Set protocol [Default: http]
  --with-domains=<d>                 Set CDN domains [Default: s0.ga.1txdn.com,s1.ga.1txdn.com]
  --with-md5-len=<l>                 Set MD5 Length [Default: 10]
