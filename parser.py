@@ -64,7 +64,7 @@ class Parser(object):
         """Judge the path is a link or not"""
         # match() is different from search()
         # if we use search(), we should use ^(http(s)?|ftp)
-        match = re.match("(http(s)?|ftp)", path, re.IGNORECASE)
+        match = re.match("(http(s)?|ftp|chrome-extension)", path, re.IGNORECASE)
         if match is not None:
             return True
         else:
@@ -72,16 +72,13 @@ class Parser(object):
 
     def __gen_path(self, parent_file_path, url):
         if self.__is_a_link(url):
+            logger.info("LINK FOUND:%s <- %s" % (url.decode(self.__charset), parent_file_path.decode(self.__charset)))
             return None
         (parent_path, parent_file_name) = os.path.split(parent_file_path)
-        if url.startswith('./') or url.startswith('../'):
-            return '%s/%s' % (parent_path, url)
-        elif url.startswith('/'):
+        if url.startswith('/'):
             return '%s%s' % (self.__get_static_files_path(), url)
         else:
-            # Must be some errors
-            logger.error(url)
-            return None
+            return '%s/%s' % (parent_path, url)
 
     def __parse_static_file(self, parent_file_path, url):
         path = self.__gen_path(parent_file_path, url)
@@ -89,8 +86,9 @@ class Parser(object):
             return
 
         if not os.path.exists(path):
-            logger.warning("%s not found" % path)
-            self.statistics["not_found_count"] += 1
+            if self.__resource_map.get(path) is None:
+                logger.warning("NOT FOUND:%s <- %s" % (path.decode(self.__charset), parent_file_path.decode(self.__charset)))
+                self.statistics["not_found_count"] += 1
             return
 
         (url_without_ext, file_ext) = os.path.splitext(url)
@@ -106,14 +104,13 @@ class Parser(object):
             if url.endswith('.js'):
                 regex = self.__js_regex
 
-            logger.info("path:%s" % path)
+            logger.info("PATH:%s" % path)
             with open(path, 'r') as staticfile:
                 content = staticfile.read().decode(self.__charset)
                 pattern = re.compile(regex, re.IGNORECASE)
                 targets_matched = pattern.findall(content)
                 for target in targets_matched:
                     static_file_url = target[1]
-                    logger.info("%s waiting for proc" % static_file_url)
                     if not self.__is_a_link(static_file_url):
                         logger.debug("%s <- %s" % (static_file_url.decode(self.__charset), url.decode(self.__charset)))
                         self.__parse_static_file(path, static_file_url)
