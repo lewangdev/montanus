@@ -21,7 +21,6 @@ Options:
 import logging
 from os.path import split
 from docopt import docopt
-
 from logger import logger
 from config import config
 from parser import parser
