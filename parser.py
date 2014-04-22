@@ -22,9 +22,9 @@ class Parser(object):
     __text_file_exts = ['.css', '.js']
     __templates_exts = ['.jsp', '.html']
 
-    __template_regex = '(<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
-    __css_regex      = '(@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
-    __js_regex       = '(<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
+    __template_regex = '(?:<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
+    __css_regex      = '(?:@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
+    __js_regex       = '(?:<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
 
     __resource_map = {}
 
@@ -110,7 +110,7 @@ class Parser(object):
                 pattern = re.compile(regex, re.IGNORECASE)
                 targets_matched = pattern.findall(content)
                 for target in targets_matched:
-                    static_file_url = target[1]
+                    static_file_url = target[0]
                     if not self.__is_a_link(static_file_url):
                         logger.debug("%s <- %s" % (static_file_url.decode(self.__charset), url.decode(self.__charset)))
                         self.__parse_static_file(path, static_file_url)
@@ -143,7 +143,7 @@ class Parser(object):
             pattern = re.compile(regex, re.IGNORECASE)
             targets_matched = pattern.findall(content)
             for target in targets_matched:
-                static_file_url= target[1]
+                static_file_url = target[0]
                 logger.debug("%s <- %s" % (static_file_url.decode(self.__charset), path.decode(self.__charset)))
                 self.statistics["static_file_count"] += 1
                 self.__parse_static_file(path, static_file_url)
