@@ -9,6 +9,7 @@ import shutil
 
 from logger import logger
 from random import sample
+from handler import handler
 
 
 class Processor(object):
@@ -23,10 +24,6 @@ class Processor(object):
     __text_file_exts = ['.css', '.js']
     __templates_exts = ['.jsp', '.html']
 
-    __template_regex = '(?:<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
-    __css_regex      = '(?:@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
-    __js_regex       = '(?:<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
-
     __resource_map = {}
 
     custom_config = None
@@ -37,6 +34,14 @@ class Processor(object):
 
     def __init__(self):
         pass
+
+    def __get_handler(self, path):
+        (name, ext) = os.path.splitext(path)
+        type = ext.strip('.')
+        if hasattr(handler, type):
+            return getattr(handler, type)
+        else:
+            return getattr(handler, 'common')
 
     def __get_templates_path(self):
         return self.custom_config.templates_path
@@ -119,15 +124,10 @@ class Processor(object):
             return
 
         elif file_ext in self.__text_file_exts:
-            regex = self.__css_regex
-            if url.endswith('.js'):
-                regex = self.__js_regex
-
             logger.info("PATH:%s" % path)
             with open(path, 'r') as staticfile:
                 content = staticfile.read().decode(self.__charset)
-                pattern = re.compile(regex, re.IGNORECASE)
-                targets_matched = pattern.findall(content)
+                targets_matched = self.__get_handler(path)(content)
                 for target in targets_matched:
                     static_file_url = target
                     if not self.__is_a_link(static_file_url):
@@ -161,8 +161,7 @@ class Processor(object):
         regex = self.__template_regex
         with open(path) as templatefile:
             content = templatefile.read().decode(self.__charset)
-            pattern = re.compile(regex, re.IGNORECASE)
-            targets_matched = pattern.findall(content)
+            targets_matched = self.__get_handler(path)(content)
             for target in targets_matched:
                 static_file_url = target
                 logger.debug("%s <- %s" % (static_file_url.decode(self.__charset), path.decode(self.__charset)))
