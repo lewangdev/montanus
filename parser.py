@@ -5,6 +5,7 @@ import utils
 import re
 import logging
 import os
+import shutil
 
 from logger import logger
 from random import sample
@@ -57,7 +58,10 @@ class Parser(object):
 
         #TODO
         #[x] Rename
-        os.rename(path, new_path)
+        if self.custom_config.delete_source:
+            os.rename(path, new_path)
+        else:
+            shutil.copy(path, new_path)
         return new_file_name
 
     def __is_a_link(self, path):
@@ -110,7 +114,7 @@ class Parser(object):
                 pattern = re.compile(regex, re.IGNORECASE)
                 targets_matched = pattern.findall(content)
                 for target in targets_matched:
-                    static_file_url = target[0]
+                    static_file_url = target
                     if not self.__is_a_link(static_file_url):
                         logger.debug("%s <- %s" % (static_file_url.decode(self.__charset), url.decode(self.__charset)))
                         self.__parse_static_file(path, static_file_url)
@@ -143,7 +147,7 @@ class Parser(object):
             pattern = re.compile(regex, re.IGNORECASE)
             targets_matched = pattern.findall(content)
             for target in targets_matched:
-                static_file_url = target[0]
+                static_file_url = target
                 logger.debug("%s <- %s" % (static_file_url.decode(self.__charset), path.decode(self.__charset)))
                 self.statistics["static_file_count"] += 1
                 self.__parse_static_file(path, static_file_url)

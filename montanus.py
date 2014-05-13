@@ -3,13 +3,14 @@
 """Montanus.
 
 Usage:
-  montanus.py <templates_path> [--with-static-files-path=<p> | --with-protocol=<p> | --with-domains=<l> | --with-md5-len=<l> | --with-md5-concat-by=<c> | --with-conf=<f>]
+  montanus.py <templates_path> [--with-static-files-path=<p> | --with-protocol=<p> | --with-domains=<l> | --with-md5-len=<l> | --with-md5-concat-by=<c> | --with-conf=<f> | -d]
   montanus.py (-h | --help)
   montanus.py (-v | --version)
 
 Options:
  -h --help                          Show this help message
  -v --version                       Show version
+ -d --delete                        Delete all sources
  --with-static-files-path=<p>       Set static file path. If not set, the value will be the same as template_path
  --with-protocol=<p>                Set protocol [Default: http]
  --with-domains=<d>                 Set CDN domains [Default: s0.ga.1txdn.com,s1.ga.1txdn.com]
@@ -19,7 +20,6 @@ Options:
  """
 
 import logging
-from os.path import split
 from docopt import docopt
 from logger import logger
 from config import config
@@ -42,18 +42,19 @@ def parse_arguments():
 
     conf_file = arguments.get('--with-conf')
     if conf_file is not None:
-        (config.filepath, config.filename) = split(conf_file)
         conf_config = config.read(conf_file)
 
         for (k, v) in conf_config.items():
             if v is not None:
                 custom_config[k] = v
 
+    logger.debug(arguments)
     command_config = {
         'templates_path': arguments.get('<templates_path>'),
         'static_files_path': arguments.get('--with-static-files-path') \
             if arguments.get('-with-static-files-path') is not None \
             else arguments.get('<templates_path>'),
+        'delete_source': arguments.get('--delete'),
         'protocol': arguments.get('--with-protocol'),
         'domains': arguments.get('--with-domains').split(','),
         'md5_len': int(arguments.get('--with-md5-len')),
@@ -70,5 +71,5 @@ def parse_arguments():
 
 
 if __name__ == '__main__':
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     build()
