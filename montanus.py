@@ -13,7 +13,7 @@ Options:
  -d --delete                        Delete all sources
  --with-static-files-path=<p>       Set static file path. If not set, the value will be the same as template_path
  --with-protocol=<p>                Set protocol [Default: http]
- --with-domains=<d>                 Set CDN domains [Default: s0.ga.1txdn.com,s1.ga.1txdn.com]
+ --with-domains=<d>                 Set CDN domains
  --with-md5-len=<l>                 Set MD5 Length [Default: 10]
  --with-md5-concat-by=<c>           Set MD5 concatenator [Default: -]
  --with-conf=<f>                    Set config file path
@@ -39,7 +39,7 @@ def parse_arguments():
     """Get all arguments as a dict object"""
     custom_config = config.read()
     arguments = docopt(__doc__, version='Montanus %s' % __version__)
-
+    logger.debug(custom_config)
     conf_file = arguments.get('--with-conf')
     if conf_file is not None:
         conf_config = config.read(conf_file)
@@ -56,7 +56,9 @@ def parse_arguments():
             else arguments.get('<templates_path>'),
         'delete_source': arguments.get('--delete'),
         'protocol': arguments.get('--with-protocol'),
-        'domains': arguments.get('--with-domains').split(','),
+        'domains': arguments.get('--with-domains').split(',') \
+            if arguments.get('--with-domains') is not None \
+            else None,
         'md5_len': int(arguments.get('--with-md5-len')),
         'md5_concat_by': arguments.get('--with-md5-concat-by')
     }
