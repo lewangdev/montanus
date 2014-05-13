@@ -80,7 +80,7 @@ class Processor(object):
         """Judge the path is a link or not"""
         # match() is different from search()
         # if we use search(), we should use ^(http(s)?|ftp)
-        match = re.match("(http(s)?|ftp|chrome-extension)", path, re.IGNORECASE)
+        match = re.match("(http(s)?|ftp|chrome-extension|\/\/)", path, re.IGNORECASE)
         if match is not None:
             return True
         else:
