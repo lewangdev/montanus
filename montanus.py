@@ -13,7 +13,7 @@ Options:
  -d --delete                        Delete all sources
  --with-static-files-path=<p>       Set static file path. If not set, the value will be the same as template_path
  --with-protocol=<p>                Set protocol [Default: http]
- --with-domains=<d>                 Set CDN domains
+ --with-domains=<d>                 Set CDN domains[Default: ]
  --with-md5-len=<l>                 Set MD5 Length [Default: 10]
  --with-md5-concat-by=<c>           Set MD5 concatenator [Default: -]
  --with-conf=<f>                    Set config file path
@@ -23,7 +23,7 @@ import logging
 from docopt import docopt
 from logger import logger
 from config import config
-from parser import parser
+from processor import processor
 from utils import DictWrapper
 
 __version__ = '0.0.1'
@@ -31,9 +31,10 @@ __version__ = '0.0.1'
 
 def build():
     """Start to build the package to CDN requirement"""
-    parser.custom_config = parse_arguments()
-    parser.process()
-    logger.info(parser.statistics)
+    processor.custom_config = parse_arguments()
+    processor.process()
+    logger.info(processor.statistics)
+    logger.info(processor.custom_config)
 
 def parse_arguments():
     """Get all arguments as a dict object"""

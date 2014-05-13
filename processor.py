@@ -11,7 +11,7 @@ from logger import logger
 from random import sample
 
 
-class Parser(object):
+class Processor(object):
     """
     Find and Parse all static files to CDN requirement
     """
@@ -45,9 +45,13 @@ class Parser(object):
         return self.custom_config.static_files_path
 
     def __get_url_prefix(self):
-        return "%s://%s" % (
-            self.custom_config.protocol,
-            sample(self.custom_config.domains, 1)[0])
+        if len(self.custom_config.domains) == 1 \
+                and len(self.custom_config.domains[0]) == 0:
+            return ''
+        else :
+            return "%s://%s" % (
+                self.custom_config.protocol,
+                sample(self.custom_config.domains, 1)[0])
 
     def __rename_with_md5(self, path):
         new_path = utils.unique_name(path, self.custom_config.md5_len,
@@ -132,7 +136,8 @@ class Parser(object):
         if self.__resource_map.get(static_file_path) is not None:
             (base_path, file_name) = os.path.split(url_in_parent)
             name_with_md5 = self.__resource_map.get(static_file_path)
-            static_file_cdnurl = "%s%s%s" % (self.__get_url_prefix(), base_path, name_with_md5)
+            static_file_cdnurl = "%s%s%s" % (self.__get_url_prefix(), base_path, name_with_md5) \
+                if base_path.endswith('/') else "%s%s/%s" % (self.__get_url_prefix(), base_path, name_with_md5)
             content = content.replace(url_in_parent, static_file_cdnurl)
         return content
 
@@ -173,7 +178,7 @@ class Parser(object):
         logger.debug('MAP:%s' % self.__resource_map)
 
 
-parser = Parser()  # build a runtime parser
+processor = Processor()  # build a runtime processor
 
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
