@@ -88,6 +88,13 @@ class Processor(object):
         else:
             return '%s/%s' % (parent_path, url)
 
+    def __gen_md5_path(self, path, name_with_md5):
+        (file_path, file_name) = os.path.split(path)
+        if file_path.endswith('/'):
+            return "%s%s" % (file_path, name_with_md5)
+        else:
+            return "%s/%s" % (file_path, name_with_md5)
+
     def __parse_static_file(self, parent_file_path, url):
         path = self.__gen_path(parent_file_path, url)
         if path is None:
@@ -104,7 +111,8 @@ class Processor(object):
             if self.__resource_map.get(path) is None:
                 name_with_md5 = self.__rename_with_md5(path)
                 self.__resource_map[path] = name_with_md5
-                logger.debug('%s <- %s' % (name_with_md5, path))
+                self.__resource_map[self.__gen_md5_path(path, name_with_md5)] = name_with_md5
+                logger.debug('Add Res:%s <- %s' % (name_with_md5, path))
             return
 
         elif file_ext in self.__text_file_exts:
