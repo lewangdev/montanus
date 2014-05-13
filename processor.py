@@ -142,6 +142,7 @@ class Processor(object):
                 path_with_md5 = self.__rename_with_md5(path)
                 if path_with_md5 is not None:
                     self.__resource_map[path] = path_with_md5
+                    self.__resource_map[self.__gen_md5_path(path, path_with_md5)] = path_with_md5
 
     def __replace_with_cdnurl(self, parent_path, url_in_parent, content):
         static_file_path = self.__gen_path(parent_path, url_in_parent)

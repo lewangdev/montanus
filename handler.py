@@ -14,7 +14,7 @@ class Handler:
         pattern = re.compile(js_regex, re.IGNORECASE)
         targets_matched = pattern.findall(content)
 
-        js_regex = '(?:.*?)include\(\[(.*?)\]\)[;]'
+        js_regex = '\$\.include\(\[(.*?)\]\)[;]'
         pattern = re.compile(js_regex, re.IGNORECASE)
         matched = pattern.findall(content)
         for mitem in matched:
