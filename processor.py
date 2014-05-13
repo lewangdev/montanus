@@ -158,7 +158,6 @@ class Processor(object):
         Find links and img in html. This is the entrance.
         So no need to parse html-like files
         """
-        regex = self.__template_regex
         with open(path) as templatefile:
             content = templatefile.read().decode(self.__charset)
             targets_matched = self.__get_handler(path)(content)

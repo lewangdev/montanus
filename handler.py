@@ -17,15 +17,22 @@ class Handler:
         js_regex = '(?:.*?)include\(\[(.*?)\]\)[;]'
         pattern = re.compile(js_regex, re.IGNORECASE)
         matched = pattern.findall(content)
-        targets = matched[0].split(',')
-        for targets in targets:
-            targets_matched.append(targets.strip('\''))
+        for mitem in matched:
+            targets = mitem.split(',')
+            for target in targets:
+                targets_matched.append(target.strip('\''))
         return targets_matched
 
     def common(self, content):
-        template_regex = '(?:<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']|(?:@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)''
+        template_regex = '(?:<link.*href|<script.*src|<img.*src)=["\'](.*?)["\']'
         pattern = re.compile(template_regex, re.IGNORECASE)
         targets_matched = pattern.findall(content)
+
+        template_regex = '(?:@import.*url|background.*url|background-image.*url).*?\(["\']*(.*?)["\']*\)'
+        pattern = re.compile(template_regex, re.IGNORECASE)
+        matched = pattern.findall(content)
+        for mitem in matched:
+            targets_matched.append(mitem)
         return targets_matched
 
 handler = Handler()
