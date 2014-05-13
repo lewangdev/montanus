@@ -60,6 +60,9 @@ class Processor(object):
             return None
         (parent_path, new_file_name) = os.path.split(new_path)
 
+        if new_file_name.startswith('basic'):
+            logger.debug('%s %s %s' % (path, parent_path,new_file_name))
+
         #TODO
         #[x] Rename
         if self.custom_config.delete_source:
@@ -132,12 +135,13 @@ class Processor(object):
                         self.__parse_static_file(path, static_file_url)
                         content = self.__replace_with_cdnurl(path, static_file_url, content)
 
-            with open(path, 'w') as staticfile:
-                staticfile.write(content.encode(self.__charset))
-                if self.__resource_map.get(path) is None:
-                    path_with_md5 = self.__rename_with_md5(path)
-                    if path_with_md5 is not None:
-                        self.__resource_map[path] = path_with_md5
+            staticfile = open(path, 'w')
+            staticfile.write(content.encode(self.__charset))
+            staticfile.close()
+            if self.__resource_map.get(path) is None:
+                path_with_md5 = self.__rename_with_md5(path)
+                if path_with_md5 is not None:
+                    self.__resource_map[path] = path_with_md5
 
     def __replace_with_cdnurl(self, parent_path, url_in_parent, content):
         static_file_path = self.__gen_path(parent_path, url_in_parent)
