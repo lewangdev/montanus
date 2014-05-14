@@ -33,6 +33,15 @@ class Handler:
         matched = pattern.findall(content)
         for mitem in matched:
             targets_matched.append(mitem)
+
+        js_regex = '\$\.include\(\[(.*?)\]\)[;]'
+        pattern = re.compile(js_regex, re.IGNORECASE)
+        matched = pattern.findall(content)
+        for mitem in matched:
+            targets = mitem.split(',')
+            for target in targets:
+                targets_matched.append(target.strip('\''))
+
         return targets_matched
 
 handler = Handler()
