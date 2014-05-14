@@ -149,8 +149,13 @@ class Processor(object):
         if self.__resource_map.get(static_file_path) is not None:
             (base_path, file_name) = os.path.split(url_in_parent)
             name_with_md5 = self.__resource_map.get(static_file_path)
-            static_file_cdnurl = "%s%s%s" % (self.__get_url_prefix(), base_path, name_with_md5) \
-                if base_path.endswith('/') else "%s%s/%s" % (self.__get_url_prefix(), base_path, name_with_md5)
+            if not base_path.endswith('/'):
+                base_path = "%s/" % base_path
+
+            if not base_path.startswith('/'):
+                base_path = "/%s" % base_path
+
+            static_file_cdnurl = "%s%s%s" % (self.__get_url_prefix(), base_path, name_with_md5)
             content = content.replace(url_in_parent, static_file_cdnurl)
         return content
 
