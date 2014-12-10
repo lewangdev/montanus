@@ -1,5 +1,5 @@
 templates_path    = "."
 static_files_path = "."
-domains           = ["s0.ga.1txdn.com", "s1.ga.1txdn.com"]
+domains           = ["domain.example.com"]
 md5_len           = 10
 md5_concat_by     = "_"
