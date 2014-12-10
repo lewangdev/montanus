@@ -2,3 +2,6 @@
 .idea/*
 .env/
 .DS_Store
+Montanus.egg-info/
+build/
+dist/
