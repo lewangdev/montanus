@@ -105,6 +105,8 @@ HTML 包括 JSP，PHP 以及一些模版语言
 
 ### Installation
 
+-----------
+
 ```shell
 sudo apt-get install python-pip
 git clone git@git.1tianxia.net:frontenddevops/montanus.git
@@ -118,6 +120,8 @@ sudo pip install .
 
 
 ### Usage
+
+-----------
 
 ```shell
 (montanus)➜  montanus git:(master) ./montanus.py -h
@@ -142,7 +146,24 @@ montanus.py (-v | --version)
 ```
 
 ```shell
-python montanus.py '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
+montanus '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
+```
+    
+### How to work with Jenkins
+
+-----------
+
+在合适的时机执行脚本即可，如在构建之前添加
+
+```shell
+WEB_HOME=${WORKSPACE}/src/main/webapp
+echo "Goto ${WEB_HOME} to build a version tag for all static files"
+montanus ${WEB_HOME} --with-domains=s0.test.1txdn.com,s1.test.1txdn.com
 ```
 
+在构建之后添加
 
+```shell
+pwd
+git clean -df
+```
