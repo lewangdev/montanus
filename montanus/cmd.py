@@ -29,7 +29,7 @@ from utils import DictWrapper
 __version__ = '0.0.1'
 
 
-def build():
+def main():
     """Start to build the package to CDN requirement"""
     processor.custom_config = parse_arguments()
     processor.process()
@@ -75,4 +75,4 @@ def parse_arguments():
 
 if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
-    build()
+    main()
