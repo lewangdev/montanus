@@ -3,11 +3,7 @@
 
 ## 原则
 
----------
-
 ### 二进制资源优先
-
----------
 
 支持的二进制文件类型：
 
@@ -20,8 +16,6 @@
 ```
 
 ### 文本文件递归解析
-
----------
 
 支持的文本文件类型：
 
@@ -36,8 +30,6 @@
 ```
 
 #### 示例
-
----------
 
 index.html
 
@@ -66,16 +58,12 @@ layout.css
 
 #### 递归深度
 
------------
-
 index.html &#62; layout.css &#62; bg.png
 
 index.html &#60; layout_987cb34ea2.css &#60; bg_087b4e5f67.png
 
 
 ### CDN
-
------------
 
 CSS
 
@@ -109,12 +97,8 @@ HTML 包括 JSP，PHP 以及一些模版语言
 
 ```shell
 sudo apt-get install python-pip
-git clone git@git.1tianxia.net:frontenddevops/montanus.git
+git clone https://github.com/thisiswangle/montanus.git
 cd montanus
-#OR
-# wget https://git.1tianxia.net/frontenddevops/montanus/repository/archive.tar.gz?ref=master
-# tar -zxvf archive.tar.gz
-# cd archinve
 sudo pip install .
 ```
 
@@ -146,7 +130,7 @@ montanus.py (-v | --version)
 ```
 
 ```shell
-montanus '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
+montanus 'awesome_project/src/main/webapp'
 ```
     
 ### How to work with Jenkins
@@ -158,7 +142,7 @@ montanus '/Users/wangle/Workspace/gitlab/proto/src/main/webapp'
 ```shell
 WEB_HOME=${WORKSPACE}/src/main/webapp
 echo "Goto ${WEB_HOME} to build a version tag for all static files"
-montanus ${WEB_HOME} --with-domains=s0.test.1txdn.com,s1.test.1txdn.com
+montanus ${WEB_HOME} --with-domains=s0.awesome-domain.com,s1.awesome-domain.com
 ```
 
 在构建之后添加
