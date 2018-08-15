@@ -13,11 +13,11 @@ setup(
     version="0.0.1",
     description="A tool for managing static files version for CDN requirements",
     author="Le Wang",
-    author_email="le.wang@1tianxia.net",
+    author_email="thisiswangle@gmail.com",
     packages=["montanus", ],
     package_data={'montanus': ['montanus.conf.sample'], },
     entry_points={"console_scripts": ["montanus = montanus.cmd:main", ]},
-    url="https://git.1tianxia.net/frontenddevops/montanus",
+    url="https://github.com/thisiswangle/montanus",
     license="MIT",
     long_description=open("README.md").read(),
     extras_require={
