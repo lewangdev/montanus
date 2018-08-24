@@ -1,11 +1,11 @@
-静态资源发布工具
+A Tool for Static Resources Deployment
 ===============
 
-## 原则
+## Principle
 
-### 二进制资源优先
+### Binary Resources First
 
-支持的二进制文件类型：
+Supported Binary File Types：
 
 ```python
  __binary_file_exts = [
@@ -15,21 +15,21 @@
 
 ```
 
-### 文本文件递归解析
+### Text Files Parsed Recursively
 
-支持的文本文件类型：
+Supported Text File Types：
 
 ```python
   __text_file_exts = ['.css', '.js']
 ```
 
-模版后缀：
+Extension Name of Template Files：
 
 ```python
   __templates_exts = ['.jsp', '.html']
 ```
 
-#### 示例
+#### Example
 
 index.html
 
@@ -56,7 +56,7 @@ layout.css
 .bg{background: url(bg.png)}
 ```
 
-#### 递归深度
+#### Recursive Depth
 
 index.html &#62; layout.css &#62; bg.png
 
@@ -76,10 +76,10 @@ filter[Only IE]
 
 JS
 
-AMD require，或者自定义
-避免直接 document.write img
+* AMD require
+* Please avoid using `document.write img`
 
-HTML 包括 JSP，PHP 以及一些模版语言
+HTML, such as JSP, PHP etc.
 
 ```html
 <script src="path">
@@ -137,7 +137,7 @@ montanus 'awesome_project/src/main/webapp'
 
 -----------
 
-在合适的时机执行脚本即可，如在构建之前添加
+Add this code before building process
 
 ```shell
 WEB_HOME=${WORKSPACE}/src/main/webapp
@@ -145,7 +145,7 @@ echo "Goto ${WEB_HOME} to build a version tag for all static files"
 montanus ${WEB_HOME} --with-domains=s0.awesome-domain.com,s1.awesome-domain.com
 ```
 
-在构建之后添加
+Add this code after building
 
 ```shell
 pwd
